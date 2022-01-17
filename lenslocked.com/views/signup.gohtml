@@ -1,4 +1,17 @@
 {{define "yield"}}
+  <div class="row justify-content-md-center mb-4">
+    <div class="col col-lg-4">
+      <div class="card">
+        <h5 class="card-header text-white bg-primary">Sign up</h5>
+        <div class="card-body">
+          {{template "signupForm"}}
+        </div>
+      </div>
+    </div>
+  </div>
+{{end}}  
+
+{{define "signupForm"}}
     <form>
       <div class="mb-3">
         <label for="email" class="form-label">Email address</label>
