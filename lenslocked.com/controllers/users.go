@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/gorilla/schema"
 	"github.com/username/project-name/views"
 	"net/http"
 )
@@ -30,14 +29,10 @@ type SignupForm struct {
 
 // Create processes the signup form when a user tries to create a new user account POST /signup
 func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
+	var form SignupForm
+	if err := parseForm(r, &form); err != nil {
 		panic(err)
 	}
 
-	decoder := schema.NewDecoder()
-	var form SignupForm
-	if err := decoder.Decode(&form, r.PostForm); err != nil {
-		panic(err)
-	}
-	fmt.Fprintln(w, form)
+	fmt.Fprint(w, form)
 }
