@@ -6,6 +6,11 @@ import (
 	"path/filepath"
 )
 
+var (
+	TemplateDir string = "views/"
+	TemplateExt string = ".gohtml"
+)
+
 func layoutFiles(pattern string) []string {
 	files, err := filepath.Glob(pattern)
 	if err != nil {
@@ -15,7 +20,9 @@ func layoutFiles(pattern string) []string {
 }
 
 func NewView(layout string, files ...string) *View {
-	files = append(files, layoutFiles("views/layouts/*.gohtml")...)
+	addPathAndExt(files)
+
+	files = append(files, layoutFiles(TemplateDir+"layouts/*"+TemplateExt)...)
 
 	t, err := template.ParseFiles(files...)
 	if err != nil {
@@ -42,4 +49,11 @@ func (v *View) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (v *View) Render(w http.ResponseWriter, data interface{}) error {
 	w.Header().Set("Content-Type", "text/html")
 	return v.Template.ExecuteTemplate(w, v.Layout, data)
+}
+
+// addTemplatePath takes in a slice of strings and concatenates TemplateDir and TemplateExt
+func addPathAndExt(files []string) {
+	for i, s := range files {
+		files[i] = TemplateDir + s + TemplateExt
+	}
 }
