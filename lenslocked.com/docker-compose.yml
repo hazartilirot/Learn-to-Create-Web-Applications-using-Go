@@ -1,0 +1,16 @@
+ version: "3.9"
+ 
+ services:
+   db:
+      image: postgres:14-alpine
+      container_name: postgres
+      volumes:
+        #- ./db:/docker-entrypoint-initdb.d/:rw'
+        - ./db:/var/lib/db:rw
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: root
+        POSTGRES_DB: lenslocked_dev
+        POSTGRES_HOST: localhost
+      ports: 
+        - '5432:5432'
