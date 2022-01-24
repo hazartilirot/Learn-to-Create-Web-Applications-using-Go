@@ -22,11 +22,31 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	//us.ResetDB()
-	user, err := us.ByID(1)
+	us.ResetDB()
+
+	user := models.User{
+		Name:  "John Doe",
+		Email: "john@example.com",
+	}
+
+	if err := us.Create(&user); err != nil {
+		panic(err)
+	}
+
+	user.Email = "johndoe@example.com"
+
+	if err = us.Update(&user); err != nil {
+		panic(err)
+	}
+
+	if err := us.Delete(user.ID); err != nil {
+		panic(err)
+	}
+
+	userByID, err := us.ByID(user.ID)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(user)
+	fmt.Println(userByID)
 }
