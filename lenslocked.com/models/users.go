@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -61,6 +62,13 @@ func (us *UserService) ByID(id uint) (*User, error) {
 }
 
 func (us *UserService) Create(user *User) error {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.PasswordHash = string(bytes)
+	user.Password = ""
+
 	return us.db.Create(&user).Error
 }
 
@@ -72,7 +80,9 @@ func (us *UserService) ResetDB() error {
 	if err := us.db.Migrator().DropTable(&User{}); err != nil {
 		return err
 	}
-	us.AutoMigrate()
+	if err := us.AutoMigrate(); err != nil {
+		return err
+	}
 	return nil
 }
 func (us *UserService) AutoMigrate() error {
@@ -84,6 +94,8 @@ func (us *UserService) AutoMigrate() error {
 
 type User struct {
 	gorm.Model
-	Name  string
-	Email string `gorm:"not null; uniqueIndex"`
+	Name         string
+	Email        string `gorm:"not null; uniqueIndex"`
+	Password     string `gorm:"-"`
+	PasswordHash string `gorm:"not null"`
 }
