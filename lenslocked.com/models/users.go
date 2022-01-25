@@ -68,9 +68,18 @@ func (us *UserService) Update(user *User) error {
 	return us.db.Save(user).Error
 }
 
-func (us *UserService) ResetDB() {
-	us.db.Migrator().DropTable(&User{})
-	us.db.AutoMigrate(&User{})
+func (us *UserService) ResetDB() error {
+	if err := us.db.Migrator().DropTable(&User{}); err != nil {
+		return err
+	}
+	us.AutoMigrate()
+	return nil
+}
+func (us *UserService) AutoMigrate() error {
+	if err := us.db.AutoMigrate(&User{}); err != nil {
+		return err
+	}
+	return nil
 }
 
 type User struct {
