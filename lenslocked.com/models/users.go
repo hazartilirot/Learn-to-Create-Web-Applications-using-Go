@@ -12,6 +12,8 @@ var (
 	ErrNotFound = errors.New("models: resource not found")
 	/*ErrInvalidID is returned when invalid ID is provided to a method like Delete*/
 	ErrInvalidID = errors.New("models: ID must be other than 0")
+	/*ErrInvalidEmailOrPassword is returned when invalid password is typed in*/
+	ErrInvalidEmailOrPassword = errors.New("models: Invalid email or password. Please try again")
 )
 
 func NewUserService(connectionInfo string) (*UserService, error) {
@@ -59,6 +61,23 @@ func (us *UserService) ByID(id uint) (*User, error) {
 	db := us.db.Where("id = ?", id)
 	err := first(db, &user)
 	return &user, err
+}
+
+func (us *UserService) Authenticate(email, password string) (*User, error) {
+	user, err := us.ByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	if err != nil {
+		switch err {
+		case bcrypt.ErrMismatchedHashAndPassword:
+			return nil, ErrInvalidEmailOrPassword
+		default:
+			return nil, err
+		}
+	}
+	return user, nil
 }
 
 func (us *UserService) Create(user *User) error {
