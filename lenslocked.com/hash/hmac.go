@@ -3,7 +3,7 @@ package hash
 import (
 	"crypto/hmac"
 	"crypto/sha256"
-	"encoding/hex"
+	"encoding/base64"
 	"hash"
 )
 
@@ -16,9 +16,10 @@ func NewHMAC(key string) HMAC {
 
 // Hash will hash an input string using HMAC with the secret key provided when the HMAC object was created
 func (h HMAC) Hash(input string) string {
+	h.hmac.Reset()
 	h.hmac.Write([]byte(input))
 	b := h.hmac.Sum(nil)
-	return hex.EncodeToString(b)
+	return base64.URLEncoding.EncodeToString(b)
 }
 
 type HMAC struct {
