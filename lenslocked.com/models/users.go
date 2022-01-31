@@ -21,6 +21,18 @@ var (
 
 const hmacSecretKey = "secret-hmac-key"
 
+/*User represents the user's model stored in our database. It's used for users accounts.
+Storing both an email and password so users can log in and gain access to their content*/
+type User struct {
+	gorm.Model
+	Name         string
+	Email        string `gorm:"not null; uniqueIndex"`
+	Password     string `gorm:"-"`
+	PasswordHash string `gorm:"not null"`
+	Remember     string `gorm:"-"`
+	RememberHash string `gorm:"not null; uniqueIndex"`
+}
+
 /*UserDB is used to interact with the database*/
 type UserDB interface {
 	ByID(id uint) (*User, error)
@@ -35,19 +47,55 @@ type UserDB interface {
 	ResetDB() error
 }
 
-func NewUserService(connectionInfo string) (*UserService, error) {
+type UserService interface {
+	Authenticate(email, password string) (*User, error)
+	UserDB
+}
+
+func NewUserService(connectionInfo string) (*userService, error) {
 
 	ug, err := newUserGorm(connectionInfo)
 
 	if err != nil {
 		return nil, err
 	}
-	return &UserService{
-		UserDB: &UserValidator{
+	return &userService{
+		UserDB: &userValidator{
 			UserDB: ug,
 		},
 	}, nil
 }
+
+var _ UserService = &userService{}
+
+type userService struct {
+	UserDB
+}
+
+func (us *userService) Authenticate(email, password string) (*User, error) {
+	user, err := us.ByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	if err != nil {
+		switch err {
+		case bcrypt.ErrMismatchedHashAndPassword:
+			return nil, ErrInvalidEmailOrPassword
+		default:
+			return nil, err
+		}
+	}
+	return user, nil
+}
+
+var _ UserDB = &userValidator{}
+
+type userValidator struct {
+	UserDB
+}
+
+var _ UserDB = &userGorm{}
 
 func newUserGorm(connectionInfo string) (*userGorm, error) {
 	db, err := gorm.Open(postgres.Open(connectionInfo), &gorm.Config{})
@@ -63,27 +111,9 @@ func newUserGorm(connectionInfo string) (*userGorm, error) {
 	}, nil
 }
 
-var _ UserDB = &userGorm{}
-
-type UserService struct {
-	UserDB
-}
-
-type UserValidator struct {
-	UserDB
-}
-
 type userGorm struct {
 	db   *gorm.DB
 	hmac hash.HMAC
-}
-
-func first(db *gorm.DB, dst interface{}) error {
-	err := db.First(dst).Error
-	if err == gorm.ErrRecordNotFound {
-		return ErrNotFound
-	}
-	return err
 }
 
 func (ug *userGorm) Delete(id uint) error {
@@ -136,23 +166,6 @@ func (ug *userGorm) ByID(id uint) (*User, error) {
 	return &user, nil
 }
 
-func (us *UserService) Authenticate(email, password string) (*User, error) {
-	user, err := us.ByEmail(email)
-	if err != nil {
-		return nil, err
-	}
-	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
-	if err != nil {
-		switch err {
-		case bcrypt.ErrMismatchedHashAndPassword:
-			return nil, ErrInvalidEmailOrPassword
-		default:
-			return nil, err
-		}
-	}
-	return user, nil
-}
-
 func (ug *userGorm) Create(user *User) error {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -199,12 +212,10 @@ func (ug *userGorm) AutoMigrate() error {
 	return nil
 }
 
-type User struct {
-	gorm.Model
-	Name         string
-	Email        string `gorm:"not null; uniqueIndex"`
-	Password     string `gorm:"-"`
-	PasswordHash string `gorm:"not null"`
-	Remember     string `gorm:"-"`
-	RememberHash string `gorm:"not null; uniqueIndex"`
+func first(db *gorm.DB, dst interface{}) error {
+	err := db.First(dst).Error
+	if err == gorm.ErrRecordNotFound {
+		return ErrNotFound
+	}
+	return err
 }
