@@ -70,11 +70,17 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case models.ErrNotFound:
-			fmt.Fprintln(w, "Invalid credentials")
+			fmt.Fprintln(w, models.ErrNotFound)
+			return
 		case models.ErrInvalidEmailOrPassword:
-			fmt.Fprintln(w, "Invalid credentials")
+			fmt.Fprintln(w, models.ErrNotFound)
+			return
+		case models.ErrPasswordIsRequired:
+			fmt.Fprintln(w, models.ErrPasswordIsRequired)
+			return
 		default:
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 	err = u.signIn(w, user)
