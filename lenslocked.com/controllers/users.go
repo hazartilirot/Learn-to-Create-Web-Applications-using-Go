@@ -25,15 +25,7 @@ type Users struct {
 
 func (u *Users) New(w http.ResponseWriter, r *http.Request) {
 
-	d := views.Data{
-		Alert: &views.Alert{
-			Level:   views.AlertError,
-			Message: "Something went wrong",
-		},
-		Yield: nil,
-	}
-
-	err := u.NewView.Render(w, d)
+	err := u.NewView.Render(w, nil)
 
 	if err != nil {
 		panic(err)
@@ -48,9 +40,15 @@ type SignupForm struct {
 
 // Create processes the signup form when a user tries to create a new user account POST /signup
 func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
 	var form SignupForm
 	if err := parseForm(r, &form); err != nil {
-		panic(err)
+		vd.Alert = &views.Alert{
+			Level:   views.AlertError,
+			Message: views.AlertMsgGeneric,
+		}
+		u.NewView.Render(w, vd)
+		return
 	}
 	user := models.User{
 		Name:     form.Name,
@@ -58,16 +56,19 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		Password: form.Password,
 	}
 	if err := u.us.Create(&user); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		vd.Alert = &views.Alert{
+			Level:   views.AlertError,
+			Message: err.Error(),
+		}
+		u.NewView.Render(w, vd)
 		return
 	}
 
 	err := u.signIn(w, &user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/signin", http.StatusFound)
 		return
 	}
-
 	http.Redirect(w, r, "/cookietest", http.StatusFound)
 }
 

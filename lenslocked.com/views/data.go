@@ -5,6 +5,8 @@ const (
 	AlertWarning = "warning"
 	AlertInfo    = "info"
 	AlertSuccess = "success"
+
+	AlertMsgGeneric = "Something went wrong, please try again or contact us if the problem persists"
 )
 
 /*Alert is used to pass the seriousness level of a message and its context to a user */
