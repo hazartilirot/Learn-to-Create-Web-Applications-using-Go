@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"github.com/username/project-name/hash"
 	"github.com/username/project-name/rand"
 	"golang.org/x/crypto/bcrypt"
@@ -9,26 +8,6 @@ import (
 	"gorm.io/gorm"
 	"regexp"
 	"strings"
-)
-
-var (
-	/*ErrNotFound is returned when a resource cannot be found in the database*/
-	ErrNotFound = errors.New("models: resource not found")
-	/*ErrInvalidID is returned when invalid ID is provided to a method like Delete*/
-	ErrInvalidID = errors.New("models: ID must be other than 0")
-	/*ErrInvalidEmailOrPassword is returned when invalid password is typed in*/
-	ErrInvalidEmailOrPassword = errors.New("models: Invalid email or password. Please try again")
-	ErrInvalidToken           = errors.New("models: The token is invalid or empty")
-
-	ErrEmailRequired     = errors.New("models: Email address is required")
-	ErrEmailInvalid      = errors.New("models: Email address is invalid")
-	ErrEmailIsRegistered = errors.New("modules: Email is already registered")
-
-	ErrPasswordIsShort    = errors.New("modules: Password must be at least eight characters long")
-	ErrPasswordIsRequired = errors.New("modules: Password is required")
-
-	ErrRememberIsShort        = errors.New("modules: Token must be at least 32 bytes")
-	ErrRememberHashIsRequired = errors.New("modules: Remember hash is required")
 )
 
 const hmacSecretKey = "secret-hmac-key"
