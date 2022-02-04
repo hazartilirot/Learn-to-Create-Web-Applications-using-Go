@@ -4,15 +4,15 @@ import "strings"
 
 const (
 	/*ErrNotFound is returned when a resource cannot be found in the database*/
-	ErrNotFound modelError = "models: Resource not found"
+	ErrNotFound modelError = "modules: Resource not found"
 	/*ErrInvalidID is returned when invalid ID is provided to a method like Delete*/
-	ErrInvalidID modelError = "models: ID must be other than 0"
+	ErrInvalidID modelError = "modules: ID must be other than 0"
 	/*ErrInvalidEmailOrPassword is returned when invalid password is typed in*/
-	ErrInvalidEmailOrPassword modelError = "models: Invalid email or password. Please try again"
-	ErrInvalidToken           modelError = "models: The token is invalid or empty"
+	ErrInvalidEmailOrPassword modelError = "modules: Invalid email or password. Please try again"
+	ErrInvalidToken           modelError = "modules: The token is invalid or empty"
 
-	ErrEmailRequired     modelError = "models: Email address is required"
-	ErrEmailInvalid      modelError = "models: Email address is invalid"
+	ErrEmailRequired     modelError = "modules: Email address is required"
+	ErrEmailInvalid      modelError = "modules: Email address is invalid"
 	ErrEmailIsRegistered modelError = "modules: Email is already registered"
 
 	ErrPasswordIsShort    modelError = "modules: Password must be at least eight characters long"

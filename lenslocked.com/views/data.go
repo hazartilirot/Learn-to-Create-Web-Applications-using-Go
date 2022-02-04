@@ -23,15 +23,16 @@ type Data struct {
 
 func (d *Data) SetAlert(err error) {
 	if pErr, ok := err.(PublicError); ok {
-		d.Alert = &Alert{
-			Level:   AlertError,
-			Message: pErr.Public(),
-		}
+		d.AlertMsg(pErr.Public())
 	} else {
-		d.Alert = &Alert{
-			Level:   AlertError,
-			Message: AlertMsgGeneric,
-		}
+		d.AlertMsg(AlertMsgGeneric)
+	}
+}
+
+func (d *Data) AlertMsg(msg string) {
+	d.Alert = &Alert{
+		Level:   AlertError,
+		Message: msg,
 	}
 }
 
