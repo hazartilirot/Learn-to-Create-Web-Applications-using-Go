@@ -23,6 +23,35 @@ type Users struct {
 	us        models.UserService
 }
 
+func (u *Users) New(w http.ResponseWriter, r *http.Request) {
+
+	type Alert struct {
+		Level   string
+		Message string
+	}
+
+	type Data struct {
+		Alert Alert
+		Yield interface{}
+	}
+
+	a := Alert{
+		Level:   "danger",
+		Message: "Successfully rendered a dynamic alert!",
+	}
+
+	d := Data{
+		Alert: a,
+		Yield: "Hello!",
+	}
+
+	err := u.NewView.Render(w, d)
+
+	if err != nil {
+		panic(err)
+	}
+}
+
 type SignupForm struct {
 	Name     string `schema:"name"`
 	Email    string `schema:"email"`
