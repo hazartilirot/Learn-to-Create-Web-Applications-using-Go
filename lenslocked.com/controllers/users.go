@@ -24,12 +24,7 @@ type Users struct {
 }
 
 func (u *Users) New(w http.ResponseWriter, r *http.Request) {
-
-	err := u.NewView.Render(w, nil)
-
-	if err != nil {
-		panic(err)
-	}
+	u.NewView.Render(w, nil)
 }
 
 type SignupForm struct {
