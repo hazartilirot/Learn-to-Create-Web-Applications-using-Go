@@ -4,7 +4,6 @@ import (
 	"github.com/username/project-name/hash"
 	"github.com/username/project-name/rand"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"regexp"
 	"strings"
@@ -43,21 +42,15 @@ type UserService interface {
 	UserDB
 }
 
-func NewUserService(connectionInfo string) (*userService, error) {
-
-	ug, err := newUserGorm(connectionInfo)
-
-	if err != nil {
-		return nil, err
-	}
+func NewUserService(db *gorm.DB) UserService {
+	ug := &userGorm{db}
 
 	hmac := hash.NewHMAC(hmacSecretKey)
-
 	uv := newUserValidator(ug, hmac)
 
 	return &userService{
 		UserDB: uv,
-	}, nil
+	}
 }
 
 var _ UserService = &userService{}
@@ -315,17 +308,6 @@ func (uv *userValidator) passwordHashRequired(user *User) error {
 }
 
 var _ UserDB = &userGorm{}
-
-func newUserGorm(connectionInfo string) (*userGorm, error) {
-	db, err := gorm.Open(postgres.Open(connectionInfo), &gorm.Config{})
-
-	if err != nil {
-		return nil, err
-	}
-	return &userGorm{
-		db: db,
-	}, nil
-}
 
 func (ug *userGorm) Delete(id uint) error {
 	user := User{Model: gorm.Model{ID: id}}

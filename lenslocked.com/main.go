@@ -21,12 +21,13 @@ func main() {
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 
-	us, err := models.NewUserService(dsn)
+	services, err := models.NewServices(dsn)
 	must(err)
-	us.AutoMigrate()
+	// TODO: it isn't working. Needs to be fixed
+	/*services.AutoMigrate()*/
 
 	staticC := controllers.NewStatic()
-	usersC := controllers.NewUsers(us)
+	usersC := controllers.NewUsers(services.User)
 
 	r := mux.NewRouter()
 	r.Handle("/", staticC.Home).Methods("GET")
