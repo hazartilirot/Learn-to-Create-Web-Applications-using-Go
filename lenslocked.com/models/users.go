@@ -32,9 +32,6 @@ type UserDB interface {
 	Create(user *User) error
 	Update(user *User) error
 	Delete(id uint) error
-
-	AutoMigrate() error
-	ResetDB() error
 }
 
 type UserService interface {
@@ -359,23 +356,6 @@ func (ug *userGorm) Create(user *User) error {
 
 func (ug *userGorm) Update(user *User) error {
 	return ug.db.Save(user).Error
-}
-
-func (ug *userGorm) ResetDB() error {
-	if err := ug.db.Migrator().DropTable(&User{}); err != nil {
-		return err
-	}
-	if err := ug.AutoMigrate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (ug *userGorm) AutoMigrate() error {
-	if err := ug.db.AutoMigrate(&User{}); err != nil {
-		return err
-	}
-	return nil
 }
 
 func first(db *gorm.DB, dst interface{}) error {

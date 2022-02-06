@@ -23,8 +23,8 @@ func main() {
 
 	services, err := models.NewServices(dsn)
 	must(err)
-	// TODO: it isn't working. Needs to be fixed
-	/*services.AutoMigrate()*/
+	//services.ResetDB()
+	services.AutoMigrate()
 
 	staticC := controllers.NewStatic()
 	usersC := controllers.NewUsers(services.User)
