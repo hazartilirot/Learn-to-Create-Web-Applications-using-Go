@@ -4,22 +4,27 @@ import "strings"
 
 const (
 	/*ErrNotFound is returned when a resource cannot be found in the database*/
-	ErrNotFound modelError = "modules: Resource not found"
-	/*ErrInvalidID is returned when invalid ID is provided to a method like Delete*/
-	ErrInvalidID modelError = "modules: ID must be other than 0"
+	ErrNotFound modelError = "models: Resource not found"
 	/*ErrInvalidEmailOrPassword is returned when invalid password is typed in*/
-	ErrInvalidEmailOrPassword modelError = "modules: Invalid email or password. Please try again"
-	ErrInvalidToken           modelError = "modules: The token is invalid or empty"
+	ErrInvalidEmailOrPassword modelError = "models: Invalid email or password. Please try again"
+	ErrInvalidToken           modelError = "models: The token is invalid or empty"
 
-	ErrEmailRequired     modelError = "modules: Email address is required"
-	ErrEmailInvalid      modelError = "modules: Email address is invalid"
-	ErrEmailIsRegistered modelError = "modules: Email is already registered"
+	ErrEmailRequired     modelError = "models: Email address is required"
+	ErrEmailInvalid      modelError = "models: Email address is invalid"
+	ErrEmailIsRegistered modelError = "models: Email is already registered"
 
-	ErrPasswordIsShort    modelError = "modules: Password must be at least eight characters long"
-	ErrPasswordIsRequired modelError = "modules: Password is required"
+	ErrPasswordIsShort    modelError = "models: Password must be at least eight characters long"
+	ErrPasswordIsRequired modelError = "models: Password is required"
 
-	ErrRememberIsShort        modelError = "modules: Token must be at least 32 bytes"
-	ErrRememberHashIsRequired modelError = "modules: Remember hash is required"
+	ErrTitleRequired modelError = "models: Title is required"
+
+	/*ErrInvalidID is returned when invalid ID is provided to a method like Delete*/
+	ErrInvalidID privateError = "models: ID provided was invalid"
+
+	ErrRememberIsShort        privateError = "models: Token must be at least 32 bytes"
+	ErrRememberHashIsRequired privateError = "models: Remember hash is required"
+
+	ErrUserIDRequired privateError = "models: User ID is required "
 )
 
 type modelError string
@@ -29,8 +34,14 @@ func (e modelError) Error() string {
 }
 
 func (e modelError) Public() string {
-	s := strings.Replace(string(e), "modules: ", "", 1)
+	s := strings.Replace(string(e), "models: ", "", 1)
 	split := strings.Split(s, " ")
 	split[0] = strings.Title(split[0])
 	return strings.Join(split, " ")
+}
+
+type privateError string
+
+func (e privateError) Error() string {
+	return string(e)
 }

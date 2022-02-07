@@ -27,6 +27,7 @@ func (g *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 	var vd views.Data
 	var form GalleryForm
 	if err := parseForm(r, &form); err != nil {
+		fmt.Println(err)
 		vd.SetAlert(err)
 		g.New.Render(w, vd)
 		return
