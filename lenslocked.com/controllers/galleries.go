@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/username/project-name/context"
 	"github.com/username/project-name/models"
 	"github.com/username/project-name/views"
 	"net/http"
@@ -32,8 +33,17 @@ func (g *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 		g.New.Render(w, vd)
 		return
 	}
+
+	user := context.User(r.Context())
+
+	if user == nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
 	gallery := models.Gallery{
-		Title: form.Title,
+		Title:  form.Title,
+		UserID: user.ID,
 	}
 	if err := g.gs.Create(&gallery); err != nil {
 		vd.SetAlert(err)
