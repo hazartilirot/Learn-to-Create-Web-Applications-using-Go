@@ -1,0 +1,25 @@
+{{define "yield"}}
+  <div class="row justify-content-md-center mb-6">
+    <div class="col col-lg-6">
+      <div class="card">
+        <h5 class="card-header text-white bg-primary">Edit your gallery</h5>
+        <div class="card-body">
+          {{template "editGalleryForm" .}}
+        </div>
+      </div>
+    </div>
+  </div>
+{{end}}  
+
+{{define "editGalleryForm"}}
+    <form action="/galleries/{{.ID}}/update" method="POST">
+      <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input type="text" name="title" class="form-control" 
+               id="title" placeholder="Input gallery's name"
+               value="{{.Title}}"
+        >
+      </div>
+      <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+{{end}}
