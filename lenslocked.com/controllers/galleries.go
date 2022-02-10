@@ -101,6 +101,32 @@ func (g *Galleries) Update(w http.ResponseWriter, r *http.Request) {
 	g.EditView.Render(w, vd)
 }
 
+/*POST /galleries/:id/delete */
+func (g *Galleries) Delete(w http.ResponseWriter, r *http.Request) {
+	gallery, err := g.galleryByID(w, r)
+	if err != nil {
+		return
+	}
+	user := context.User(r.Context())
+
+	var vd views.Data
+
+	if gallery.UserID != user.ID {
+		http.Error(w, "Gallery not found", http.StatusNotFound)
+		return
+	}
+	err = g.gs.Delete(gallery.ID)
+
+	if err != nil {
+		vd.SetAlert(err)
+		vd.Yield = gallery
+		g.EditView.Render(w, vd)
+		return
+	}
+	//TODO: Redirect to the index page
+	fmt.Fprintln(w, "successfully deleted")
+}
+
 /*POST /galleries */
 func (g *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 	var vd views.Data
