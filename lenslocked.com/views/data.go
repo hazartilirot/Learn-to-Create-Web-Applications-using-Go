@@ -1,5 +1,7 @@
 package views
 
+import "github.com/username/project-name/models"
+
 const (
 	AlertError   = "danger"
 	AlertWarning = "warning"
@@ -18,6 +20,7 @@ type Alert struct {
 /*Data is the top-level structure views expect data to come in*/
 type Data struct {
 	Alert *Alert
+	User  *models.User
 	Yield interface{}
 }
 

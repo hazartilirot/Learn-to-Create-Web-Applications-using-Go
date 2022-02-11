@@ -6,29 +6,49 @@ import (
 	"net/http"
 )
 
-type RequireUser struct {
+type User struct {
 	models.UserService
 }
 
-func (mv *RequireUser) Apply(next http.Handler) http.HandlerFunc {
-	return mv.ApplyFn(next.ServeHTTP)
+func (mw *User) Apply(next http.Handler) http.HandlerFunc {
+	return mw.ApplyFn(next.ServeHTTP)
 }
 
-func (mv *RequireUser) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
+func (mw *User) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("remember_token")
 		if err != nil {
-			http.Redirect(w, r, "/signin", http.StatusFound)
+			next(w, r)
 			return
 		}
-		user, err := mv.UserService.ByRemember(cookie.Value)
+		user, err := mw.ByRemember(cookie.Value)
 		if err != nil {
-			http.Redirect(w, r, "/signin", http.StatusFound)
+			next(w, r)
+			return
 		}
 		ctx := r.Context()
 		ctx = context.WithUser(ctx, user)
 		r = r.WithContext(ctx)
 
+		next(w, r)
+	})
+}
+
+type RequireUser struct {
+	User
+}
+
+func (mw *RequireUser) Apply(next http.Handler) http.HandlerFunc {
+	return mw.ApplyFn(next.ServeHTTP)
+}
+
+func (mw *RequireUser) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := context.User(r.Context())
+		if user == nil {
+			http.Redirect(w, r, "/signup", http.StatusFound)
+			return
+		}
 		next(w, r)
 	})
 }

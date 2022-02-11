@@ -35,8 +35,12 @@ func main() {
 	galleriesC := controllers.NewGalleries(services.Gallery, r)
 
 	/*middleware*/
-	requireUserMw := middleware.RequireUser{
+	UserMw := middleware.User{
 		UserService: services.User,
+	}
+
+	requireUserMw := middleware.RequireUser{
+		User: UserMw,
 	}
 
 	r.Handle("/", staticC.Home).Methods("GET")
@@ -46,7 +50,6 @@ func main() {
 	r.HandleFunc("/signup", usersC.Create).Methods("POST")
 	r.Handle("/signin", usersC.LoginView).Methods("GET")
 	r.HandleFunc("/signin", usersC.Login).Methods("POST")
-	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
 
 	/*Gallery routes*/
 	r.HandleFunc("/galleries", requireUserMw.ApplyFn(galleriesC.Index)).Methods("GET")
@@ -57,7 +60,7 @@ func main() {
 		"edit_gallery")
 	r.HandleFunc("/galleries/{id:[0-9]+}/update", requireUserMw.ApplyFn(galleriesC.Update)).Methods("POST")
 	r.HandleFunc("/galleries/{id:[0-9]+}/delete", requireUserMw.ApplyFn(galleriesC.Delete)).Methods("POST")
-	http.ListenAndServe(":3000", r)
+	http.ListenAndServe(":3000", UserMw.Apply(r))
 
 }
 
