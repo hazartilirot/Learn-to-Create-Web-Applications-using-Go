@@ -13,10 +13,21 @@
 
 {{define "galleryForm"}}
     <form action="/galleries" method="POST">
-      <div class="mb-3">
-        <label for="title" class="form-label">Title</label>
-        <input type="text" name="title" class="form-control" id="title" placeholder="Input gallery's name">
+      <div class="row mb-3">
+        <label for="title" class="col-sm-1 col-form-label">Title</label>
+        <div class="col-sm-9">
+          <input type="text" name="title" class="form-control" id="title" placeholder="Input gallery's name">
+        </div>
+        <div class="col-sm-2">
+          <button type="submit" class="btn btn-default">Save</button>
+        </div>
       </div>
-      <button type="submit" class="btn btn-primary">Create</button>
     </form>
+{{end}}
+  
+{{define "imageUploadForm"}}
+  <div class="mb-3">
+        <label for="formFile" class="form-label">Select a photograph</label>
+        <input class="form-control" type="file" id="formFile">
+  </div>
 {{end}}
