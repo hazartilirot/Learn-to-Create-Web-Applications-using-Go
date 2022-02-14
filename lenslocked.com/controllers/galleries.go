@@ -6,8 +6,14 @@ import (
 	"github.com/username/project-name/context"
 	"github.com/username/project-name/models"
 	"github.com/username/project-name/views"
+	"io"
 	"net/http"
+	"os"
 	"strconv"
+)
+
+const (
+	maxMultipartMem = 1 << 20 // 1 megabyte
 )
 
 func NewGalleries(gs models.GalleryService, r *mux.Router) *Galleries {
@@ -114,6 +120,66 @@ func (g *Galleries) Update(w http.ResponseWriter, r *http.Request) {
 		Message: "Gallery successfully updated",
 	}
 	g.EditView.Render(w, r, vd)
+}
+
+//POST /galleries/:id/images
+func (g *Galleries) ImageUpload(w http.ResponseWriter, r *http.Request) {
+	gallery, err := g.galleryByID(w, r)
+
+	if err != nil {
+		return
+	}
+	user := context.User(r.Context())
+
+	if user.ID != gallery.UserID {
+		http.Error(w, "Gallery not found", http.StatusNotFound)
+		return
+	}
+
+	var vd views.Data
+	vd.Yield = gallery
+	if err = r.ParseMultipartForm(maxMultipartMem); err != nil {
+		vd.SetAlert(err)
+		g.EditView.Render(w, r, vd)
+		return
+	}
+
+	/*Create a directory to contain uploaded images*/
+	galleryPath := fmt.Sprintf("images/galleries/%v/", gallery.ID)
+	err = os.MkdirAll(galleryPath, 0755)
+	if err != nil {
+		vd.SetAlert(err)
+		g.EditView.Render(w, r, vd)
+		return
+	}
+
+	files := r.MultipartForm.File["images"]
+	for _, f := range files {
+		/*Open the uploaded file*/
+		file, err := f.Open()
+		if err != nil {
+			vd.SetAlert(err)
+			g.EditView.Render(w, r, vd)
+			return
+		}
+		defer file.Close()
+		/*Create a destination file*/
+		dst, err := os.Create(galleryPath + f.Filename)
+		if err != nil {
+			vd.SetAlert(err)
+			g.EditView.Render(w, r, vd)
+			return
+		}
+		defer dst.Close()
+		/*Copy uploaded file data to the destination file*/
+		_, err = io.Copy(dst, file)
+		if err != nil {
+			vd.SetAlert(err)
+			g.EditView.Render(w, r, vd)
+			return
+		}
+		fmt.Fprintln(w, "files successfully uploaded!")
+	}
 }
 
 /*POST /galleries/:id/delete */
