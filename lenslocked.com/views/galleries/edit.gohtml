@@ -1,15 +1,16 @@
 {{define "yield"}}
     <div class="row">
-        <div class="col-sm-12">
+        
             {{template "editGalleryForm" .}}
             {{template "galleryImages" .}}
             {{template "uploadImageForm" .}}
             {{template "deleteGalleryForm" .}}
-        </div>
     </div>
 {{end}}  
 
 {{define "editGalleryForm"}}
+    <h2>Edit your gallery</h2> 
+    <a href="/galleries/{{.ID}}">View The Gallery</a>
     <form action="/galleries/{{.ID}}/update" method="POST">
         <div class="row mb-3">
             <label for="title" class="col-sm-1 col-form-label">Title</label>
@@ -55,9 +56,19 @@
 {{end}}
 
 {{define "galleryImages"}}
-     <ul>
-        {{range .Images}}
-          <li>{{.}}</li>
-        {{end}}
-      </ul>
+    {{range .ImagesSplitN 6}}
+        <div class="col-sm-2">
+            {{range .}}
+                <a href="{{.}}">
+                    <img src="{{.}}" class="thumbnail" alt="image">
+                </a>
+            {{end}}
+        </div>
+    {{end}}
+     <style>
+        .thumbnail {
+          width: 100%
+          
+        }
+    </style>
 {{end}}
