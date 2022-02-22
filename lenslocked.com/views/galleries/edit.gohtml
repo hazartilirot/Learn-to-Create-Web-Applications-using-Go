@@ -59,9 +59,10 @@
     {{range .ImagesSplitN 6}}
         <div class="col-sm-2">
             {{range .}}
-                <a href="{{.}}">
-                    <img src="{{.}}" class="thumbnail" alt="image">
+                <a href="{{.Path}}">
+                    <img src="{{.Path}}" class="thumbnail" alt="image">
                 </a>
+                {{template "deleteImageForm" .}}
             {{end}}
         </div>
     {{end}}
@@ -71,4 +72,10 @@
           
         }
     </style>
+{{end}}
+
+{{define "deleteImageForm"}}
+    <form action="/galleries/{{.GalleryID}}/images/{{.Filename}}/delete" method="POST">
+        <button type="submit" class="btn btn-default">Delete</button>
+    </form>
 {{end}}
