@@ -232,18 +232,12 @@ func (g *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 	var vd views.Data
 	var form GalleryForm
 	if err := parseForm(r, &form); err != nil {
-		fmt.Println(err)
 		vd.SetAlert(err)
 		g.New.Render(w, r, vd)
 		return
 	}
 
 	user := context.User(r.Context())
-
-	if user == nil {
-		http.Redirect(w, r, "/login", http.StatusFound)
-		return
-	}
 
 	gallery := models.Gallery{
 		Title:  form.Title,
@@ -256,7 +250,7 @@ func (g *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	url, err := g.r.Get("edit_gallery").URL("id", fmt.Sprintf("%v", gallery.ID))
 	if err != nil {
-		http.Redirect(w, r, "/", http.StatusFound)
+		http.Redirect(w, r, "/galleries", http.StatusFound)
 		return
 	}
 	http.Redirect(w, r, url.String(), http.StatusFound)
