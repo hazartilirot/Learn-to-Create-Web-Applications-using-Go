@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"github.com/username/project-name/controllers"
 	"github.com/username/project-name/middleware"
 	"github.com/username/project-name/models"
+	"github.com/username/project-name/rand"
 	"net/http"
 )
 
@@ -35,6 +37,12 @@ func main() {
 	galleriesC := controllers.NewGalleries(services.Gallery, services.Image, r)
 
 	/*middleware*/
+	//TODO: Update this to be a config variable
+	isProd := false
+	n, err := rand.Bytes(32)
+	must(err)
+	csrfMw := csrf.Protect(n, csrf.Secure(isProd))
+
 	UserMw := middleware.User{
 		UserService: services.User,
 	}
@@ -72,7 +80,7 @@ func main() {
 		requireUserMw.ApplyFn(galleriesC.ImageDelete)).Methods("POST")
 	r.HandleFunc("/galleries/{id:[0-9]+}/images", requireUserMw.ApplyFn(galleriesC.ImageUpload)).Methods("POST")
 
-	http.ListenAndServe(":3000", UserMw.Apply(r))
+	http.ListenAndServe(":3000", csrfMw(UserMw.Apply(r)))
 
 }
 
