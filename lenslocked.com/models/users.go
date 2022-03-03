@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+//TODO Config this
 const hmacSecretKey = "secret-hmac-key"
 
 /*User represents the user's model stored in our database. It's used for users accounts.

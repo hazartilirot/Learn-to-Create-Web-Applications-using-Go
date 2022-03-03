@@ -1,12 +1,11 @@
 package models
 
 import (
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func NewServices(connectionInfo string) (*Services, error) {
-	db, err := gorm.Open(postgres.Open(connectionInfo), &gorm.Config{})
+func NewServices(dialect gorm.Dialector) (*Services, error) {
+	db, err := gorm.Open(dialect, &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}

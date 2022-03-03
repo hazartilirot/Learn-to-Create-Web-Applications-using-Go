@@ -11,20 +11,11 @@ import (
 	"net/http"
 )
 
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = "root"
-	dbname   = "lenslocked_dev"
-)
-
 func main() {
-	dsn := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
-
-	services, err := models.NewServices(dsn)
+	cfg := DefaultConfig()
+	dbCfg := DefaultPostgresConfig()
+	dbCfgInfo := dbCfg.ConnectionInfo()
+	services, err := models.NewServices(dbCfg.Dialect(dbCfgInfo))
 	must(err)
 	//services.ResetDB()
 	services.AutoMigrate()
@@ -37,11 +28,9 @@ func main() {
 	galleriesC := controllers.NewGalleries(services.Gallery, services.Image, r)
 
 	/*middleware*/
-	//TODO: Update this to be a config variable
-	isProd := false
 	n, err := rand.Bytes(32)
 	must(err)
-	csrfMw := csrf.Protect(n, csrf.Secure(isProd))
+	csrfMw := csrf.Protect(n, csrf.Secure(cfg.isProd()))
 
 	UserMw := middleware.User{
 		UserService: services.User,
@@ -80,7 +69,8 @@ func main() {
 		requireUserMw.ApplyFn(galleriesC.ImageDelete)).Methods("POST")
 	r.HandleFunc("/galleries/{id:[0-9]+}/images", requireUserMw.ApplyFn(galleriesC.ImageUpload)).Methods("POST")
 
-	http.ListenAndServe(":3000", csrfMw(UserMw.Apply(r)))
+	fmt.Printf("The server is running on :%d...\n", cfg.Port)
+	http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), csrfMw(UserMw.Apply(r)))
 
 }
 
