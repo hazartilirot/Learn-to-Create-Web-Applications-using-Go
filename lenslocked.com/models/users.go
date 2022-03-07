@@ -9,9 +9,6 @@ import (
 	"strings"
 )
 
-//TODO Config this
-const hmacSecretKey = "secret-hmac-key"
-
 /*User represents the user's model stored in our database. It's used for users accounts.
 Storing both an email and password so users can log in and gain access to their content*/
 type User struct {
@@ -40,10 +37,10 @@ type UserService interface {
 	UserDB
 }
 
-func NewUserService(db *gorm.DB) UserService {
+func NewUserService(db *gorm.DB, hmacKey string) UserService {
 	ug := &userGorm{db}
 
-	hmac := hash.NewHMAC(hmacSecretKey)
+	hmac := hash.NewHMAC(hmacKey)
 	uv := newUserValidator(ug, hmac)
 
 	return &userService{

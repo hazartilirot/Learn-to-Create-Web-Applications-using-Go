@@ -4,17 +4,48 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewServices(dialect gorm.Dialector) (*Services, error) {
-	db, err := gorm.Open(dialect, &gorm.Config{})
-	if err != nil {
-		return nil, err
+type ServicesConfig func(*Services) error
+
+func WithGorm(dialect gorm.Dialector) ServicesConfig {
+	return func(s *Services) error {
+		db, err := gorm.Open(dialect, &gorm.Config{})
+		if err != nil {
+			return err
+		}
+		s.db = db
+		return nil
 	}
-	return &Services{
-		Gallery: NewGalleryService(db),
-		User:    NewUserService(db),
-		Image:   NewImageService(),
-		db:      db,
-	}, nil
+}
+
+func WithUser(hmacKey string) ServicesConfig {
+	return func(s *Services) error {
+		s.User = NewUserService(s.db, hmacKey)
+		return nil
+	}
+}
+
+func WithGallery() ServicesConfig {
+	return func(s *Services) error {
+		s.Gallery = NewGalleryService(s.db)
+		return nil
+	}
+}
+
+func WithImage() ServicesConfig {
+	return func(s *Services) error {
+		s.Image = NewImageService()
+		return nil
+	}
+}
+
+func NewServices(cfgs ...func(*Services) error) (*Services, error) {
+	var s Services
+	for _, cfg := range cfgs {
+		if err := cfg(&s); err != nil {
+			return nil, err
+		}
+	}
+	return &s, nil
 }
 
 type Services struct {

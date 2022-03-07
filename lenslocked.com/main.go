@@ -15,7 +15,13 @@ func main() {
 	cfg := DefaultConfig()
 	dbCfg := DefaultPostgresConfig()
 	dbCfgInfo := dbCfg.ConnectionInfo()
-	services, err := models.NewServices(dbCfg.Dialect(dbCfgInfo))
+	services, err := models.NewServices(
+		models.WithGorm(dbCfg.Dialect(dbCfgInfo)),
+		models.WithUser(cfg.HMACKey),
+		models.WithGallery(),
+		models.WithImage(),
+	)
+	//services, err := models.NewServices(dbCfg.Dialect(dbCfgInfo))
 	must(err)
 	//services.ResetDB()
 	services.AutoMigrate()
