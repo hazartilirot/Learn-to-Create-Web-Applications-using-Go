@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
@@ -12,8 +13,10 @@ import (
 )
 
 func main() {
-	cfg := DefaultConfig()
-	dbCfg := DefaultPostgresConfig()
+	boolPtr := flag.Bool("prod", false, "Provide this flag in production. This ensures "+
+		"a .config file is provided before the application starts")
+	cfg := LoadConfig(*boolPtr)
+	dbCfg := cfg.Database
 	dbCfgInfo := dbCfg.ConnectionInfo()
 	services, err := models.NewServices(
 		models.WithGorm(dbCfg.Dialect(dbCfgInfo)),
@@ -21,7 +24,6 @@ func main() {
 		models.WithGallery(),
 		models.WithImage(),
 	)
-	//services, err := models.NewServices(dbCfg.Dialect(dbCfgInfo))
 	must(err)
 	//services.ResetDB()
 	services.AutoMigrate()

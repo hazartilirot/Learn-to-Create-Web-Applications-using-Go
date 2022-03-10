@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"os"
 )
 
 type PostgresConfig struct {
@@ -38,9 +40,10 @@ func DefaultPostgresConfig() PostgresConfig {
 }
 
 type Config struct {
-	Port    int    `json:"port"`
-	Env     string `json:"env"`
-	HMACKey string `json:"hmac_key"`
+	Port     int            `json:"port"`
+	Env      string         `json:"env"`
+	HMACKey  string         `json:"hmac_key"`
+	Database PostgresConfig `json:"database"`
 }
 
 func (c Config) isProd() bool {
@@ -49,17 +52,28 @@ func (c Config) isProd() bool {
 
 func DefaultConfig() Config {
 	return Config{
-		Port:    3000,
-		Env:     "dev",
-		HMACKey: "secret-hmac-key",
+		Port:     3000,
+		Env:      "dev",
+		HMACKey:  "secret-hmac-key",
+		Database: DefaultPostgresConfig(),
 	}
 }
 
-//# /models/users.go
-//
-//const hmacSecretKey = "secret-hmac-key"
-//
-//
-//# /models/services.go
-//
-//db, err := gorm.Open(postgres.Open(connectionInfo), &gorm.Config{})
+func LoadConfig(config bool) Config {
+	f, err := os.Open(".config")
+	if err != nil {
+		if config {
+			panic(err)
+		}
+		fmt.Println("Loading the default config")
+		return DefaultConfig()
+	}
+	var c Config
+	dec := json.NewDecoder(f)
+	err = dec.Decode(&c)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Successfully loaded .config")
+	return c
+}
