@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"github.com/username/project-name/context"
 	"github.com/username/project-name/models"
 	"github.com/username/project-name/rand"
 	"github.com/username/project-name/views"
 	"net/http"
+	"time"
 )
 
 // NewUsers creates a new Users controller.
@@ -95,6 +97,27 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/galleries", http.StatusFound)
+}
+
+func (u *Users) Logout(w http.ResponseWriter, r *http.Request) {
+	cookie := http.Cookie{
+		Name:     "remember_token",
+		Value:    "",
+		Expires:  time.Now(),
+		HttpOnly: true,
+	}
+
+	http.SetCookie(w, &cookie)
+
+	user := context.User(r.Context())
+
+	token, _ := rand.RememberToken()
+
+	user.Remember = token
+
+	u.us.Update(user)
+
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func (u *Users) signIn(w http.ResponseWriter, user *models.User) error {
