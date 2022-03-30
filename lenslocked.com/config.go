@@ -44,6 +44,7 @@ type Config struct {
 	Env      string         `json:"env"`
 	HMACKey  string         `json:"hmac_key"`
 	Database PostgresConfig `json:"database"`
+	Mailgun  MailgunConfig  `json:"mailgun"`
 }
 
 func (c Config) isProd() bool {
@@ -57,6 +58,11 @@ func DefaultConfig() Config {
 		HMACKey:  "secret-hmac-key",
 		Database: DefaultPostgresConfig(),
 	}
+}
+
+type MailgunConfig struct {
+	APIKey string `json:"api_key"`
+	Domain string `json:"domain"`
 }
 
 func LoadConfig(config bool) Config {

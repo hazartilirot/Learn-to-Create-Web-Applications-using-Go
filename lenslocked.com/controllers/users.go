@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/username/project-name/context"
+	"github.com/username/project-name/email"
 	"github.com/username/project-name/models"
 	"github.com/username/project-name/rand"
 	"github.com/username/project-name/views"
@@ -10,11 +11,12 @@ import (
 )
 
 // NewUsers creates a new Users controller.
-func NewUsers(us models.UserService) *Users {
+func NewUsers(us models.UserService, emailer *email.Client) *Users {
 	return &Users{
 		NewView:   views.NewView("bootstrap", "users/new"),
 		LoginView: views.NewView("bootstrap", "users/signin"),
 		us:        us,
+		emailer:   emailer,
 	}
 }
 
@@ -22,6 +24,7 @@ type Users struct {
 	NewView   *views.View
 	LoginView *views.View
 	us        models.UserService
+	emailer   *email.Client
 }
 
 func (u *Users) New(w http.ResponseWriter, r *http.Request) {
@@ -53,6 +56,8 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		u.NewView.Render(w, r, vd)
 		return
 	}
+
+	u.emailer.Welcome(user.Name, user.Email)
 
 	err := u.signIn(w, &user)
 	if err != nil {

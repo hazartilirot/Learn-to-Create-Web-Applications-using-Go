@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"github.com/username/project-name/controllers"
+	"github.com/username/project-name/email"
 	"github.com/username/project-name/middleware"
 	"github.com/username/project-name/models"
 	"github.com/username/project-name/rand"
@@ -15,6 +16,7 @@ import (
 func main() {
 	boolPtr := flag.Bool("prod", false, "Provide this flag in production. This ensures "+
 		"a .config file is provided before the application starts")
+
 	cfg := LoadConfig(*boolPtr)
 	dbCfg := cfg.Database
 	dbCfgInfo := dbCfg.ConnectionInfo()
@@ -28,10 +30,16 @@ func main() {
 	//services.ResetDB()
 	services.AutoMigrate()
 
+	mgCfg := cfg.Mailgun
+	emailer := email.NewClient(
+		email.WithSender("LensLocked Support Team", "support@sandbox4aa3d393b9fd46b0a05c53f15a863611.mailgun.org"),
+		email.WithMailgun(mgCfg.Domain, mgCfg.APIKey),
+	)
+	
 	r := mux.NewRouter()
 
 	staticC := controllers.NewStatic()
-	usersC := controllers.NewUsers(services.User)
+	usersC := controllers.NewUsers(services.User, emailer)
 
 	galleriesC := controllers.NewGalleries(services.Gallery, services.Image, r)
 
