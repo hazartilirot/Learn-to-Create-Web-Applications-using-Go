@@ -4,7 +4,7 @@
       <div class="card">
         <h5 class="card-header text-white bg-primary">Sign up</h5>
         <div class="card-body">
-          {{template "signupForm"}}
+          {{template "signupForm" .}}
         </div>
       </div>
     </div>
@@ -16,11 +16,11 @@
       {{csrfField}}
       <div class="mb-3">
         <label for="name" class="form-label">Name</label>
-        <input type="text" name="name" class="form-control" id="name" placeholder="Your full name">
+        <input type="text" name="name" class="form-control" id="name" placeholder="Your full name" value="{{.Name}}">
       </div>
       <div class="mb-3">
         <label for="email" class="form-label">Email address</label>
-        <input type="email" name="email" class="form-control" id="email" placeholder="Email">
+        <input type="email" name="email" class="form-control" id="email" placeholder="Email" value="{{.Email}}">
       </div>
       <div class="mb-3">
         <label for="password" class="form-label">Password</label>
