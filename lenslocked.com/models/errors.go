@@ -18,6 +18,8 @@ const (
 
 	ErrTitleRequired modelError = "models: Title is required"
 
+	ErrTokenInvalid modelError = "models: token provided is not valid"
+
 	/*ErrInvalidID is returned when invalid ID is provided to a method like Delete*/
 	ErrInvalidID privateError = "models: ID provided was invalid"
 

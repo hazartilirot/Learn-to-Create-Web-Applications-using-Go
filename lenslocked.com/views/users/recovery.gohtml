@@ -1,0 +1,23 @@
+{{define "yield"}}
+  <div class="row justify-content-md-center mb-4">
+    <div class="col col-lg-4">
+      <div class="card">
+        <h5 class="card-header text-white bg-primary">Forgot your password?</h5>
+        <div class="card-body">
+          {{template "recoveryPwForm" .}}
+        </div>
+      </div>
+    </div>
+  </div>
+{{end}}  
+
+{{define "recoveryPwForm"}}
+    <form action="/recovery" method="POST">
+      {{csrfField}}
+      <div class="mb-3">
+        <label for="email" class="form-label">Email address</label>
+        <input type="email" name="email" class="form-control" id="email" placeholder="Email" value="{{.Email}}">
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+{{end}}

@@ -57,7 +57,7 @@ type Services struct {
 
 /*ResetDB drops all tables and then recreates them*/
 func (s *Services) ResetDB() error {
-	s.db.Migrator().DropTable(&User{}, &Gallery{})
+	s.db.Migrator().DropTable(&User{}, &Gallery{}, &pwReset{})
 	if err := s.db.AutoMigrate(); err != nil {
 		return err
 	}
@@ -66,5 +66,5 @@ func (s *Services) ResetDB() error {
 
 /*AutoMigrate will create tables, indexes, etc */
 func (s *Services) AutoMigrate() error {
-	return s.db.AutoMigrate(&User{}, &Gallery{})
+	return s.db.AutoMigrate(&User{}, &Gallery{}, &pwReset{})
 }

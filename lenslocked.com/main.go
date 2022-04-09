@@ -35,7 +35,7 @@ func main() {
 		email.WithSender("LensLocked Support Team", "support@sandbox4aa3d393b9fd46b0a05c53f15a863611.mailgun.org"),
 		email.WithMailgun(mgCfg.Domain, mgCfg.APIKey),
 	)
-	
+
 	r := mux.NewRouter()
 
 	staticC := controllers.NewStatic()
@@ -64,6 +64,10 @@ func main() {
 	r.Handle("/signin", usersC.LoginView).Methods("GET")
 	r.HandleFunc("/signin", usersC.Login).Methods("POST")
 	r.HandleFunc("/logout", requireUserMw.ApplyFn(usersC.Logout)).Methods("POST")
+	r.Handle("/recovery", usersC.ForgotPwView).Methods("GET")
+	r.HandleFunc("/recovery", usersC.InitiateReset).Methods("POST")
+	r.HandleFunc("/reset", usersC.ResetPw).Methods("GET")
+	r.HandleFunc("/reset", usersC.CompleteReset).Methods("POST")
 
 	/*Assets*/
 	assetsHandler := http.FileServer(http.Dir("./assets"))

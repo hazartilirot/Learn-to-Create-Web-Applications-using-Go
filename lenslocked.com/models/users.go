@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 	"regexp"
 	"strings"
+	"time"
 )
 
 /*User represents the user's model stored in our database. It's used for users accounts.
@@ -32,8 +33,12 @@ type UserDB interface {
 	Delete(id uint) error
 }
 
+/*UserService is a set of methods used to manipulate and work with the user model*/
 type UserService interface {
+	/*Authenticate will verify the provided email address and password are correct*/
 	Authenticate(email, password string) (*User, error)
+	InitiateReset(email string) (string, error)
+	CompleteReset(token, newPw string) (*User, error)
 	UserDB
 }
 
@@ -44,7 +49,8 @@ func NewUserService(db *gorm.DB, hmacKey string) UserService {
 	uv := newUserValidator(ug, hmac)
 
 	return &userService{
-		UserDB: uv,
+		UserDB:    uv,
+		pwResetDB: newPwResetValidator(&pwResetGorm{db}, hmac),
 	}
 }
 
@@ -52,6 +58,7 @@ var _ UserService = &userService{}
 
 type userService struct {
 	UserDB
+	pwResetDB pwResetDB
 }
 
 func (us *userService) Authenticate(email, password string) (*User, error) {
@@ -71,6 +78,46 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 			return nil, err
 		}
 	}
+	return user, nil
+}
+
+/*InitiateReset will start the reset password process by creating a reset
+token for the user found with the provided email address*/
+func (us *userService) InitiateReset(email string) (string, error) {
+	user, err := us.ByEmail(email)
+	if err != nil {
+		return "", err
+	}
+	pwr := pwReset{
+		UserID: user.ID,
+	}
+	if err := us.pwResetDB.Create(&pwr); err != nil {
+		return "", err
+	}
+	return pwr.Token, nil
+}
+
+func (us *userService) CompleteReset(token, newPw string) (*User, error) {
+	pwr, err := us.pwResetDB.ByToken(token)
+	if err != nil {
+		if err == ErrNotFound {
+			return nil, ErrTokenInvalid
+		}
+		return nil, err
+	}
+	if time.Now().Sub(pwr.CreatedAt) > (12 * time.Hour) {
+		return nil, ErrTokenInvalid
+	}
+	user, err := us.ByID(pwr.UserID)
+	if err != nil {
+		return nil, err
+	}
+	user.Password = newPw
+	err = us.Update(user)
+	if err != nil {
+		return nil, err
+	}
+	us.pwResetDB.Delete(pwr.ID)
 	return user, nil
 }
 
